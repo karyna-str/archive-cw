@@ -36,7 +36,6 @@ export async function createBook(formData: FormData) {
     let finalWordCount = 0;
 
     if (mode === "text") {
-        // Якщо це ручний ввід тексту
         type = "TEXT";
         finalWordCount = countWords(content);
     } else {
@@ -98,11 +97,10 @@ export async function deleteBook(bookId: string) {
             },
         });
     } else {
-    // Видаляємо книгу, але ТІЛЬКИ якщо вона належить цьому юзеру
     await db.book.deleteMany({
         where: {
             id: bookId,
-            userId: userId, // Захист: не можна видалити чуже
+            userId: userId,
         },
     });
     }
@@ -151,7 +149,6 @@ export async function saveTextContent(bookId: string, content: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    // Перераховуємо слова
     const wordCount = countWords(content);
 
     await db.book.updateMany({

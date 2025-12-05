@@ -17,13 +17,11 @@ import { deleteBook } from "@/app/actions";
 export default async function AdminPage() {
     const user = await currentUser();
     const isAdmin = user?.publicMetadata?.role === "admin";
-
-    // 1. ЗАХИСТ: Якщо не адмін - викидаємо на головну
+    
     if (!user || !isAdmin) {
         redirect("/");
     }
-
-    // 2. Отримуємо ВСІ книги (без фільтра по userId)
+    
     const allBooks = await db.book.findMany({
         orderBy: { createdAt: "desc" },
     });
@@ -59,7 +57,6 @@ export default async function AdminPage() {
                                     {new Date(book.createdAt).toLocaleDateString()}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    {/* Кнопка видалення (Server Action через форму) */}
                                     <form action={async () => {
                                         "use server";
                                         await deleteBook(book.id);

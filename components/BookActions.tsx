@@ -136,8 +136,10 @@ export default function BookActions({ book }: BookActionsProps) {
 
                         <DialogFooter>
                             <Button type="submit" disabled={isLoading}>
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                Зберегти зміни
+                                <>
+                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    Зберегти зміни
+                                </>
                             </Button>
                         </DialogFooter>
                     </form>

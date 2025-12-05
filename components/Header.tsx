@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { BookOpen, Upload } from 'lucide-react'; // Імпортуємо іконки
+import { BookOpen } from 'lucide-react';
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import {Button} from "@/components/ui/button"
 import { ModeToggle } from "@/components/ModeToggle";
@@ -8,7 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import { DonateButton } from "@/components/DonateButton";
 
 export default function Header() {
-    const { user, isLoaded } = useUser();
+    const { user } = useUser();
     const isAdmin = user?.publicMetadata?.role === 'admin';
     return (
         <header className="border-b border-border bg-background transition-colors duration-300">
@@ -26,13 +26,13 @@ export default function Header() {
                         <DonateButton />
                         <ModeToggle />
                         <SignedIn>
-                            {isAdmin && (
+                            {isAdmin ? (
                                 <Link href="/admin">
                                     <Button variant="ghost" className="text-red-500 font-bold">
                                         Адміністративна панель
                                     </Button>
                                 </Link>
-                            )}
+                            ) : null}
                             <UserButton afterSignOutUrl="/" />
                         </SignedIn>
 

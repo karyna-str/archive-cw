@@ -11,17 +11,22 @@ export function Search() {
     const { replace } = useRouter();
     const [term, setTerm] = useState(searchParams.get("q")?.toString() || "");
 
-    const handleSearch = (term: string) => {
-        setTerm(term);
-
+    const handleSearchDebounced = useDebouncedCallback((value: string) => {
         const params = new URLSearchParams(searchParams);
-        if (term) {
-            params.set("q", term);
+        if (value) {
+            params.set("q", value);
         } else {
             params.delete("q");
         }
-
         replace(`/?${params.toString()}`);
+    }, 300);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+
+        setTerm(value);
+        handleSearchDebounced(value);
+
     };
 
     return (
@@ -31,7 +36,7 @@ export function Search() {
                 placeholder="Пошук по назві, автору або тегам..."
                 className="pl-10 bg-slate-50/50"
                 value={term}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={handleChange}
             />
         </div>
     );

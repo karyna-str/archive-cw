@@ -23,7 +23,7 @@ export default function TextEditor({ bookId, initialContent }: TextEditorProps) 
         try {
             await saveTextContent(bookId, text);
             setIsEditing(false);
-            router.refresh(); // Оновлюємо сторінку, щоб побачити зміни
+            router.refresh();
         } catch (error) {
             alert("Помилка при збереженні");
         } finally {
@@ -32,13 +32,12 @@ export default function TextEditor({ bookId, initialContent }: TextEditorProps) 
     };
 
     const handleCancel = () => {
-        setText(initialContent); // Скидаємо зміни
+        setText(initialContent);
         setIsEditing(false);
     };
 
     return (
         <div className="relative">
-            {/* ПАНЕЛЬ ІНСТРУМЕНТІВ (Кнопка редагування) */}
             <div className="absolute -top-14 right-0 flex gap-2">
                 {!isEditing ? (
                     <Button onClick={() => setIsEditing(true)} variant="outline" className="gap-2">
@@ -50,14 +49,15 @@ export default function TextEditor({ bookId, initialContent }: TextEditorProps) 
                             <X size={16} className="mr-2" /> Скасувати
                         </Button>
                         <Button onClick={handleSave} disabled={isSaving} className="gap-2">
-                            {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                            Зберегти
+                            <>
+                                {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                                Зберегти
+                            </>
                         </Button>
                     </>
                 )}
             </div>
 
-            {/* ЗОНА КОНТЕНТУ */}
             <div className="bg-card p-6 md:p-10 rounded-lg shadow-sm border min-h-[60vh]">
                 {isEditing ? (
                     <Textarea
