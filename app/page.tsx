@@ -164,7 +164,7 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
                             </CardContent>
 
                             <CardFooter className="pt-0 mt-auto gap-2 px-0">
-                                {isPdf || isImage && (
+                                {(isPdf || isImage) && (
                                     <a href={`/api/download/${book.id}`} target="_blank" rel="noopener noreferrer" className="w-full">
                                         <Button variant="outline" size="sm" className="w-full gap-2">
                                             <FileText size={16} /> Відкрити
