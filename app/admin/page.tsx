@@ -1,14 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Trash2, ExternalLink } from "lucide-react";
 import { deleteBook } from "@/app/actions";
@@ -49,11 +42,8 @@ export default async function AdminPage() {
                     </TableHeader>
                     <TableBody>
                         {allBooks.map((book) => {
-                            // 👇 ЛОГІКА ПОСИЛАННЯ
-                            // Якщо це текст - йдемо на сторінку читання. Інакше - відкриваємо файл.
-                            const linkTarget = book.type === "TEXT"
-                                ? `/read/${book.id}`
-                                : (book.fileUrl || "#");
+
+                            const linkTarget = book.type === "TEXT" ? `/read/${book.id}` : (book.fileUrl || "#");
 
                             return (
                                 <TableRow key={book.id}>
