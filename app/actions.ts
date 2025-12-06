@@ -7,7 +7,6 @@ import { UTApi } from "uploadthing/server";
 
 const utapi = new UTApi();
 
-// --- Допоміжна функція для підрахунку слів ---
 function countWords(text: string) {
     if (!text) return 0;
     const hasCJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(text);
@@ -17,7 +16,6 @@ function countWords(text: string) {
     return text.trim().split(/\s+/).length;
 }
 
-// --- 1. СТВОРЕННЯ КНИГИ ---
 export async function createBook(formData: FormData) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
@@ -49,7 +47,6 @@ export async function createBook(formData: FormData) {
         else if (lowerName.match(/\.(jpg|jpeg|png|webp)$/)) type = "IMAGE";
         else type = "TEXT";
 
-        // Якщо це текстовий файл, спробуємо порахувати слова
         if (type === "TEXT" && fileUrl) {
             try {
                 const response = await fetch(fileUrl);
@@ -61,7 +58,6 @@ export async function createBook(formData: FormData) {
         }
 
     } else {
-        // Режим ТЕКСТУ
         content = formData.get("content") as string;
         type = "TEXT";
         wordCount = countWords(content);
@@ -98,7 +94,6 @@ export async function createBook(formData: FormData) {
     revalidatePath("/admin");
 }
 
-// --- 2. РЕДАГУВАННЯ КНИГИ (Метадані) ---
 export async function editBook(formData: FormData) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
@@ -142,7 +137,6 @@ export async function editBook(formData: FormData) {
     revalidatePath("/admin");
 }
 
-// --- 3. ВИДАЛЕННЯ КНИГИ ---
 export async function deleteBook(bookId: string) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
@@ -163,7 +157,6 @@ export async function deleteBook(bookId: string) {
     revalidatePath("/admin");
 }
 
-// --- 4. ЗБЕРЕЖЕННЯ ТЕКСТУ (Для TextEditor) ---
 export async function saveTextContent(bookId: string, content: string) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");

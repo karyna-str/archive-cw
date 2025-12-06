@@ -3,27 +3,13 @@
 import { useState } from "react";
 import { MoreVertical, Trash, Edit, Loader2, Plus, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogFooter,
-} from "@/components/ui/dialog";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteBook, editBook, createBook } from "@/app/actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-// 👇 ЗМІНА: Імпортуємо UploadButton замість UploadDropzone
 import { UploadButton } from "@/utils/uploadthing";
 
 interface BookActionsProps {
@@ -37,11 +23,10 @@ interface BookActionsProps {
         type: string;
         content: string | null;
     };
-    bookToEdit?: any; // Для сумісності, якщо десь передається як bookToEdit
+    bookToEdit?: any;
 }
 
 export default function BookActions(props: BookActionsProps) {
-    // Нормалізація пропсів (щоб працювало і як меню, і як кнопка створення)
     const book = props.book || props.bookToEdit;
     const isEditMode = !!book;
 
@@ -49,7 +34,6 @@ export default function BookActions(props: BookActionsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
 
-    // Отримуємо назву категорії безпечно
     const categoryName = book && (typeof book.category === 'object' && book.category !== null
         ? book.category.name
         : (book.category as string) || "Unsorted");
@@ -79,7 +63,6 @@ export default function BookActions(props: BookActionsProps) {
         }
     };
 
-    // ----- РЕНДЕР: МЕНЮ ДЛЯ ІСНУЮЧОЇ КНИГИ -----
     if (isEditMode) {
         return (
             <>
@@ -99,7 +82,6 @@ export default function BookActions(props: BookActionsProps) {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Модальне вікно редагування */}
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
@@ -118,7 +100,6 @@ export default function BookActions(props: BookActionsProps) {
         );
     }
 
-    // ----- РЕНДЕР: КНОПКА "ДОДАТИ" (ДЛЯ НОВОЇ КНИГИ) -----
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
@@ -143,9 +124,7 @@ export default function BookActions(props: BookActionsProps) {
     );
 }
 
-// --- ОКРЕМИЙ КОМПОНЕНТ ФОРМИ (ЩОБ НЕ ДУБЛЮВАТИ КОД) ---
 function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) {
-    // Якщо ми редагуємо ТЕКСТОВУ нотатку -> показуємо поле контенту
     const showContentField = isEditMode && book.type === 'TEXT';
 
     return (
@@ -170,7 +149,7 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                         <SelectTrigger><SelectValue placeholder="Тип" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Book">Книга</SelectItem>
-                            <SelectItem value="Fanfic">Фанфік</SelectItem>
+                            <SelectItem value="Fanfic">Нотаток</SelectItem>
                             <SelectItem value="Study">Навчання</SelectItem>
                             <SelectItem value="Docs">Документи</SelectItem>
                             <SelectItem value="Unsorted">Інше</SelectItem>
@@ -191,7 +170,6 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                 </div>
             </div>
 
-            {/* Поле для тексту (Тільки при редагуванні нотатки) */}
             {showContentField && (
                 <div>
                     <Label className="text-sm font-medium text-blue-600">Вміст тексту</Label>
@@ -213,21 +191,18 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                 />
             </div>
 
-            {/* 🔥 ЗОНА ЗАВАНТАЖЕННЯ (ТІЛЬКИ ДЛЯ НОВОЇ КНИГИ) */}
             {!isEditMode && (
                 <div className="border-2 border-dashed rounded-lg p-4 bg-slate-50 flex flex-col items-center justify-center">
                     <p className="text-sm text-slate-500 mb-2">Файл (PDF, EPUB, Картинка) або нічого для Нотатки</p>
 
-                    {/* 👇 ВИКОРИСТОВУЄМО UploadButton ДЛЯ КОМПАКТНОСТІ */}
                     <UploadButton
                         endpoint="bookAttachment"
                         appearance={{
                             button: "bg-slate-900 text-white text-sm h-9 px-4 rounded-md hover:bg-slate-800",
-                            allowedContent: "hidden" // Ховаємо текст "Image, PDF..."
+                            allowedContent: "hidden"
                         }}
                         onClientUploadComplete={(res) => {
                             const file = res[0];
-                            // Автозаповнення
                             const setVal = (name: string, val: string) => {
                                 const el = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
                                 if (el) el.value = val;
@@ -236,25 +211,22 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                             setVal("fileUrl", file.url);
                             setVal("fileKey", file.key);
                             setVal("size", file.size.toString());
-                            setVal("fileName", file.name); // Важливо для визначення типу
+                            setVal("fileName", file.name);
 
-                            // Якщо назва пуста - беремо з файлу
                             const titleInput = document.querySelector('input[name="title"]') as HTMLInputElement;
                             if (titleInput && !titleInput.value) {
                                 titleInput.value = file.name.replace(/\.[^/.]+$/, "");
                             }
-                            alert(`✅ Файл "${file.name}" завантажено!`);
+                            alert(`Файл "${file.name}" завантажено!`);
                         }}
                         onUploadError={(e) => alert(`Помилка: ${e.message}`)}
                     />
 
-                    {/* Приховані поля */}
                     <input type="hidden" name="fileUrl" />
                     <input type="hidden" name="fileKey" />
                     <input type="hidden" name="size" />
                     <input type="hidden" name="fileName" />
                     <input type="hidden" name="mode" value="file" />
-                    {/* Якщо файлу не буде, сервер зрозуміє, що це текстова нотатка */}
                 </div>
             )}
 

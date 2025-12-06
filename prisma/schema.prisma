@@ -7,10 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Таблиця 1: Книги
 model Book {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String   @map("user_id") // ID користувача з Clerk (зв'язок логічний)
+  userId       String   @map("user_id")
 
   title        String
   fileUrl      String?
@@ -23,15 +22,12 @@ model Book {
   language     String   @default("ukr")
   type         String   @default("TEXT")
 
-  // Зв'язок з Категорією (Замість простого рядка)
   category     Category? @relation(fields: [categoryId], references: [id])
   categoryId   String?   @db.ObjectId
 
-  // Зв'язок з Автором (Замість простого рядка)
   author       Author?   @relation(fields: [authorId], references: [id])
   authorId     String?   @db.ObjectId
 
-  // Зв'язок із журналом завантажень
   downloads    DownloadLog[]
 
   createdAt    DateTime @default(now())
@@ -40,28 +36,25 @@ model Book {
   @@index([userId])
 }
 
-// Таблиця 2: Категорії (Довідник)
 model Category {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   name  String @unique
-  books Book[] // Зворотній зв'язок: в категорії багато книг
+  books Book[]
 }
 
-// Таблиця 3: Автори (Довідник)
+
 model Author {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   name  String @unique
-  bio   String? // Біографія автора (опціонально)
-  books Book[] // Зворотній зв'язок: в автора багато книг
+  books Book[]
 }
 
-// Таблиця 4: Статистика завантажень (Хто, що і коли скачав)
 model DownloadLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
 
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   bookId    String   @db.ObjectId
 
-  userId    String   // Хто скачав (Clerk ID)
+  userId    String
   downloadedAt DateTime @default(now())
 }

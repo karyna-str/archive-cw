@@ -24,12 +24,10 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
 
     const isOwner = user?.id === book.userId;
 
-    // Визначаємо типи
     const lowerUrl = book.fileUrl?.toLowerCase() || "";
     const isPdf = book.type === 'PDF' || lowerUrl.includes('.pdf');
     const isImage = book.type === 'IMAGE' || lowerUrl.match(/\.(jpg|jpeg|png|webp|gif)$/);
 
-    // Отримуємо текст
     let displayText = book.content;
 
     if (!displayText && book.fileUrl && !isPdf && !isImage) {
@@ -51,7 +49,6 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
 
     return (
         <div className="container mx-auto py-10 px-4 max-w-4xl">
-            {/* Навігація */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex gap-2 items-center">
                     <Link href="/">
@@ -60,13 +57,11 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
                         </Button>
                     </Link>
 
-                    {/* Ця кнопка (олівець) тепер редагує ТІЛЬКИ МЕТАДАНІ (Назву, Автора) */}
                     {isOwner && (
                         <BookActions bookToEdit={{
                             id: book.id,
                             title: book.title,
                             description: book.description,
-                            // content не передаємо, бо редагуємо його в іншому місці
                             type: book.type,
                             language: book.language,
                             author: book.author ? { name: book.author.name } : null,
@@ -93,15 +88,11 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
                 </div>
             </div>
 
-            {/* 🔥 ЗОНА КОНТЕНТУ */}
             {isImage ? (
-                // Картинка
                 <div className="flex justify-center bg-muted/20 p-4 rounded-lg border min-h-[50vh] items-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={book.fileUrl!} alt={book.title} className="max-w-full h-auto rounded shadow-md" />
                 </div>
             ) : isPdf ? (
-                // PDF
                 <div className="text-center py-20 bg-muted/20 rounded-lg border">
                     <p className="mb-6 text-muted-foreground text-lg">PDF файли краще переглядати у повному вікні.</p>
                     <a href={book.fileUrl!} target="_blank" rel="noopener noreferrer">
@@ -109,7 +100,6 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
                     </a>
                 </div>
             ) : (
-                // 👇 2. ТЕКСТ: Якщо ти власник - показуємо РЕДАКТОР. Якщо ні - просто текст.
                 isOwner ? (
                     <TextEditor bookId={book.id} initialContent={displayText || ""} />
                 ) : (

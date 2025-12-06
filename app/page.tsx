@@ -8,20 +8,15 @@ import Link from "next/link";
 import { Download, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
-export default async function Home({
-                                       searchParams,
-                                   }: {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function Home({searchParams}: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> })
+{
     const user = await currentUser();
     const { q } = await searchParams;
     const query = typeof q === "string" ? q : undefined;
 
     const books = await db.book.findMany({
         where: {
-            userId: user?.id, // 1. ПРИВАТНІСТЬ: Тільки мої книги
             ...(query
                 ? {
                     OR: [
@@ -64,7 +59,6 @@ export default async function Home({
                 {books.map((book) => {
                     const isOwner = user?.id === book.userId;
 
-                    // Перевіряємо тип для логіки кнопок
                     const lowerUrl = book.fileUrl?.toLowerCase() || "";
                     const isPdf =
                         book.type === 'PDF' ||
@@ -78,7 +72,6 @@ export default async function Home({
                             <CardHeader className="pb-2 pt-4 px-0">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex gap-2 items-center flex-wrap">
-                                        {/* БЕЙДЖ */}
                                         <Badge variant={isPdf ? "destructive" : "secondary"}>
                                             {isPdf ? "PDF" : (book.type === "FILE" ? "DOC" : book.type)}
                                         </Badge>
@@ -99,7 +92,6 @@ export default async function Home({
                                         )}
                                     </div>
 
-                                    {/* КНОПКА РЕДАГУВАННЯ */}
                                     {isOwner && (
                                         <div className="-mt-1 -mr-2">
                                             <BookActions bookToEdit={{
@@ -137,7 +129,6 @@ export default async function Home({
                             <CardFooter className="pt-0 mt-auto gap-2 px-0">
                                 {book.fileUrl || book.type === "TEXT" ? (
                                     isPdf ? (
-                                        // 2. 🔥 ЛОГУВАННЯ: Для PDF йдемо через /api/download
                                         <a
                                             href={`/api/download/${book.id}`}
                                             target="_blank"
@@ -149,7 +140,6 @@ export default async function Home({
                                             </Button>
                                         </a>
                                     ) : (
-                                        // Для тексту йдемо на сторінку читання
                                         <Link href={`/read/${book.id}`} className="w-full">
                                             <Button variant="outline" size="sm" className="w-full gap-2">
                                                 <FileText size={16} /> Читати
