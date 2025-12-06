@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, Trash, Edit, Loader2, Plus, PenLine } from "lucide-react";
+import { MoreVertical, Trash, Edit, Loader2, Plus, FileText, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter} from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteBook, editBook, createBook } from "@/app/actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { UploadButton } from "@/utils/uploadthing";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface BookActionsProps {
     book?: {
@@ -33,10 +34,9 @@ export default function BookActions(props: BookActionsProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [createMode, setCreateMode] = useState<"file" | "text">("file");
 
-    const categoryName = book && (typeof book.category === 'object' && book.category !== null
-        ? book.category.name
-        : (book.category as string) || "Unsorted");
+    const categoryName = book && (typeof book.category === 'object' && book.category !== null ? book.category.name : (book.category as string) || "Unsorted");
 
     const handleDelete = async () => {
         if (!confirm("Ви впевнені?")) return;
@@ -48,6 +48,10 @@ export default function BookActions(props: BookActionsProps) {
     const handleSubmit = async (formData: FormData) => {
         setIsLoading(true);
         try {
+            if (!isEditMode) {
+                formData.set("mode", createMode);
+            }
+
             if (isEditMode) {
                 await editBook(formData);
                 setIsEditOpen(false);
@@ -109,23 +113,34 @@ export default function BookActions(props: BookActionsProps) {
             </DialogTrigger>
             <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Завантажити нову книгу</DialogTitle>
+                    <DialogTitle>Створити запис</DialogTitle>
                     <DialogDescription>
-                        Завантажте файл або створіть текстовий запис.
+                        Оберіть тип запису: файл або текстова нотатка.
                     </DialogDescription>
                 </DialogHeader>
+
+                <Tabs defaultValue="file" onValueChange={(v) => setCreateMode(v as "file" | "text")}>
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="file"><Upload className="w-4 h-4 mr-2"/> Файл (PDF, EPUB)</TabsTrigger>
+                        <TabsTrigger value="text"><FileText className="w-4 h-4 mr-2"/> Текст / Нотатка</TabsTrigger>
+                    </TabsList>
+
                 <BookForm
                     isEditMode={false}
+                    createMode={createMode}
                     onSubmit={handleSubmit}
                     isLoading={isLoading}
                 />
+                </Tabs>
             </DialogContent>
         </Dialog>
     );
 }
 
-function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) {
-    const showContentField = isEditMode && book.type === 'TEXT';
+function BookForm({ isEditMode, createMode, book, categoryName, onSubmit, isLoading }: any) {
+    const showTextField = (!isEditMode && createMode === "text") || (isEditMode && book.type === "TEXT");
+
+    const showUploadField = !isEditMode && createMode === "file";
 
     return (
         <form action={onSubmit} className="space-y-4 py-2">
@@ -134,11 +149,11 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label className="text-sm font-medium">Назва</Label>
-                    <Input name="title" defaultValue={book?.title} required placeholder="Назва..." />
+                    <Input name="title" defaultValue={book?.title} required placeholder="Назва..." autoComplete="off"/>
                 </div>
                 <div>
                     <Label className="text-sm font-medium">Автор</Label>
-                    <Input name="author" defaultValue={book?.author} placeholder="Автор..." />
+                    <Input name="author" defaultValue={book?.author?.name || book?.author || ""} placeholder="Автор..." autoComplete="off"/>
                 </div>
             </div>
 
@@ -170,19 +185,20 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                 </div>
             </div>
 
-            {showContentField && (
+            {showTextField && (
                 <div>
-                    <Label className="text-sm font-medium text-blue-600">Вміст тексту</Label>
+                    <Label className="text-sm font-medium text-blue-600">Вміст нотатки</Label>
                     <Textarea
                         name="content"
-                        defaultValue={book.content || ""}
+                        defaultValue={book?.content || ""}
                         className="h-48 font-mono text-sm"
+                        placeholder="Введіть ваш текст тут..."
                     />
                 </div>
             )}
 
             <div>
-                <Label className="text-sm font-medium">Опис</Label>
+                <Label className="text-sm font-medium">Опис / Теги</Label>
                 <Textarea
                     name="description"
                     defaultValue={book?.description || ""}
@@ -191,9 +207,9 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                 />
             </div>
 
-            {!isEditMode && (
+            {showUploadField && (
                 <div className="border-2 border-dashed rounded-lg p-4 bg-slate-50 flex flex-col items-center justify-center">
-                    <p className="text-sm text-slate-500 mb-2">Файл (PDF, EPUB, Картинка) або нічого для Нотатки</p>
+                    <p className="text-sm text-slate-500 mb-2">Файл (PDF, EPUB, Image)</p>
 
                     <UploadButton
                         endpoint="bookAttachment"
@@ -226,7 +242,6 @@ function BookForm({ isEditMode, book, categoryName, onSubmit, isLoading }: any) 
                     <input type="hidden" name="fileKey" />
                     <input type="hidden" name="size" />
                     <input type="hidden" name="fileName" />
-                    <input type="hidden" name="mode" value="file" />
                 </div>
             )}
 

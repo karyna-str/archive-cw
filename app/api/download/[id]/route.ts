@@ -8,7 +8,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const { userId } = await auth();
 
-    const book = await db.book.findUnique({where: { id },});
+    const book = await db.book.findUnique({
+        where: { id },
+    });
 
     if (!book || !book.fileUrl) {
         return new Response("Файл не знайдено", { status: 404 });

@@ -5,7 +5,7 @@ import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sort } from "@/components/Sort";
@@ -15,7 +15,7 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
 {
     const user = await currentUser();
     const resolvedParams = await searchParams;
-    const { q } = await searchParams;
+    const q = resolvedParams.q;
     const sort = resolvedParams.sort;
     const query = typeof q === "string" ? q : undefined;
     const sortOption = typeof sort === "string" ? sort : "newest";
@@ -40,6 +40,7 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
 
     const books = await db.book.findMany({
         where: {
+            userId: user?.id,
             ...(query
                 ? {
                     OR: [
@@ -82,11 +83,23 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {books.map((book) => {
                     const isOwner = user?.id === book.userId;
-
                     const lowerUrl = book.fileUrl?.toLowerCase() || "";
                     const isPdf =
                         book.type === 'PDF' ||
                         lowerUrl.includes('.pdf');
+                    const isEpub =
+                        book.type === 'EPUB' ||
+                        lowerUrl.includes('.epub');
+                    const isImage =
+                        book.type === 'IMAGE' ||
+                        lowerUrl.match(/\.(jpg|jpeg|png|webp)$/);
+                    const isText =
+                        book.type === 'TEXT';
+
+                    let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "secondary";
+                    if (isPdf) badgeVariant = "destructive";
+                    if (isEpub) badgeVariant = "default";
+                    if (isImage) badgeVariant = "outline";
 
                     return (
                         <Card
@@ -96,8 +109,8 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
                             <CardHeader className="pb-2 pt-4 px-0">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex gap-2 items-center flex-wrap">
-                                        <Badge variant={isPdf ? "destructive" : "secondary"}>
-                                            {isPdf ? "PDF" : (book.type === "FILE" ? "DOC" : book.type)}
+                                        <Badge variant={badgeVariant}>
+                                            {isPdf ? "PDF" : isEpub ? "EPUB" : isImage ? "IMG" : "DOC"}
                                         </Badge>
 
                                         {book.size && book.size > 0 && (
@@ -151,26 +164,27 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
                             </CardContent>
 
                             <CardFooter className="pt-0 mt-auto gap-2 px-0">
-                                {book.fileUrl || book.type === "TEXT" ? (
-                                    isPdf ? (
-                                        <a
-                                            href={`/api/download/${book.id}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="w-full"
-                                        >
-                                            <Button variant="outline" size="sm" className="w-full gap-2">
-                                                <Download size={16} /> Відкрити PDF
-                                            </Button>
-                                        </a>
-                                    ) : (
-                                        <Link href={`/read/${book.id}`} className="w-full">
-                                            <Button variant="outline" size="sm" className="w-full gap-2">
-                                                <FileText size={16} /> Читати
-                                            </Button>
-                                        </Link>
-                                    )
-                                ) : null}
+                                {isPdf || isImage && (
+                                    <a href={`/api/download/${book.id}`} target="_blank" rel="noopener noreferrer" className="w-full">
+                                        <Button variant="outline" size="sm" className="w-full gap-2">
+                                            <FileText size={16} /> Відкрити
+                                        </Button>
+                                    </a>
+                                )}
+                                {(isEpub || (!isPdf && !isText && !isImage)) && (
+                                    <a href={`/api/download/${book.id}`} download className="w-full">
+                                        <Button variant="secondary" size="sm" className="w-full gap-2">
+                                            <Download size={16} /> Скачати {isEpub ? "EPUB" : "файл"}
+                                        </Button>
+                                    </a>
+                                )}
+                                {isText && (
+                                    <Link href={`/read/${book.id}`} className="w-full">
+                                        <Button variant="default" size="sm" className="w-full gap-2">
+                                            <BookOpen size={16} /> Читати
+                                        </Button>
+                                    </Link>
+                                )}
                             </CardFooter>
                         </Card>
                     );
