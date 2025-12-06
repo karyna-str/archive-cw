@@ -166,14 +166,14 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
                             <CardFooter className="pt-0 mt-auto gap-2 px-0">
                                 {(isPdf || isImage) && (
                                     <a href={`/api/download/${book.id}`} target="_blank" rel="noopener noreferrer" className="w-full">
-                                        <Button variant="outline" size="sm" className="w-full gap-2">
+                                        <Button variant="default" size="sm" className="w-full gap-2">
                                             <FileText size={16} /> Відкрити
                                         </Button>
                                     </a>
                                 )}
                                 {(isEpub || (!isPdf && !isText && !isImage)) && (
                                     <a href={`/api/download/${book.id}`} download className="w-full">
-                                        <Button variant="secondary" size="sm" className="w-full gap-2">
+                                        <Button variant="default" size="sm" className="w-full gap-2">
                                             <Download size={16} /> Скачати {isEpub ? "EPUB" : "файл"}
                                         </Button>
                                     </a>
