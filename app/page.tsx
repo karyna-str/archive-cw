@@ -8,12 +8,35 @@ import Link from "next/link";
 import { Download, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sort } from "@/components/Sort";
+import { Prisma } from "@prisma/client";
 
 export default async function Home({searchParams}: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> })
 {
     const user = await currentUser();
+    const resolvedParams = await searchParams;
     const { q } = await searchParams;
+    const sort = resolvedParams.sort;
     const query = typeof q === "string" ? q : undefined;
+    const sortOption = typeof sort === "string" ? sort : "newest";
+
+    let orderBy: Prisma.BookOrderByWithRelationInput = { createdAt: "desc" };
+
+    switch (sortOption) {
+        case "oldest":
+            orderBy = { createdAt: "asc" };
+            break;
+        case "title_asc":
+            orderBy = { title: "asc" };
+            break;
+        case "title_desc":
+            orderBy = { title: "desc" };
+            break;
+        case "newest":
+        default:
+            orderBy = { createdAt: "desc" };
+            break;
+    }
 
     const books = await db.book.findMany({
         where: {
@@ -32,7 +55,7 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
             category: true,
             author: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: orderBy,
     });
 
     return (
@@ -51,8 +74,9 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
                 </div>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-6 flex gap-4">
                 <Search />
+                <Sort />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
