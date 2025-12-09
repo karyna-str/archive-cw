@@ -5,7 +5,7 @@ import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { Download, FileText, BookOpen } from "lucide-react";
+import { Download, FileText, BookOpen, Library } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sort } from "@/components/Sort";
@@ -14,6 +14,25 @@ import { Prisma } from "@prisma/client";
 export default async function Home({searchParams}: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> })
 {
     const user = await currentUser();
+
+    if (!user) {
+        return (
+            <main className="container mx-auto p-4 max-w-5xl h-screen flex flex-col items-center justify-center text-center">
+                <div className="bg-secondary/30 p-10 rounded-2xl border border-border">
+                    <Library className="w-20 h-20 mx-auto mb-6 text-primary" />
+                    <h1 className="text-4xl font-bold mb-4">Вітаємо в Archive Hub</h1>
+                    <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
+                        Ваш персональний простір для зберігання книг, документів та нотаток.
+                        Увійдіть, щоб отримати доступ до своєї бібліотеки.
+                    </p>
+                    <SignInButton mode="modal">
+                        <Button size="lg" className="text-lg px-8">Розпочати роботу</Button>
+                    </SignInButton>
+                </div>
+            </main>
+        );
+    }
+
     const resolvedParams = await searchParams;
     const q = resolvedParams.q;
     const sort = resolvedParams.sort;
@@ -40,7 +59,7 @@ export default async function Home({searchParams}: { searchParams: Promise<{ [ke
 
     const books = await db.book.findMany({
         where: {
-            userId: user?.id,
+            userId: user.id,
             ...(query
                 ? {
                     OR: [

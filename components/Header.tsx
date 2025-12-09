@@ -25,11 +25,11 @@ export default function Header() {
                         <ModeToggle />
                         <SignedIn>
                             {isAdmin ? (
-                                <Link href="/admin">
-                                    <Button variant="ghost" className="text-red-500 font-bold">
+                                <Button asChild variant="ghost" className="text-red-500 font-bold">
+                                    <Link href="/admin">
                                         Адміністративна панель
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             ) : null}
                             <UserButton afterSignOutUrl="/" />
                         </SignedIn>
