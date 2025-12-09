@@ -1,11 +1,12 @@
 import { db } from "@/lib/db";
-import { notFound } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 import { currentUser, auth } from "@clerk/nextjs/server";
 import BookActions from "@/components/BookActions";
 import TextEditor from "@/components/TextEditor";
+
 
 export default async function ReadPage({params}: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -20,9 +21,16 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
         }
     });
 
+    if (!user) return redirect("/");
+
     if (!book) return notFound();
 
     const isOwner = user?.id === book.userId;
+    const isAdmin = user.publicMetadata?.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+        return redirect("/"); // Або можна redirect('/forbidden')
+    }
 
     const lowerUrl = book.fileUrl?.toLowerCase() || "";
     const isPdf = book.type === 'PDF' || lowerUrl.includes('.pdf');
