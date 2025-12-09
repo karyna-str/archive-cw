@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MoreVertical, Trash, Edit, Loader2, Plus, FileText, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -66,6 +66,19 @@ export default function BookActions(props: BookActionsProps) {
             setIsLoading(false);
         }
     };
+
+    // стан монтування
+    const [isMounted, setIsMounted] = useState(false);
+
+    // коли компонент завантажився у браузері, ставимо true
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // на сервері — не рендеримо нічого
+    if (!isMounted) {
+        return null;
+    }
 
     if (isEditMode) {
         return (
