@@ -29,7 +29,7 @@ export default async function ReadPage({params}: { params: Promise<{ id: string 
     const isAdmin = user.publicMetadata?.role === "admin";
 
     if (!isOwner && !isAdmin) {
-        return redirect("/"); // Або можна redirect('/forbidden')
+        return redirect("/");
     }
 
     const lowerUrl = book.fileUrl?.toLowerCase() || "";
