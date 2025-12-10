@@ -34,7 +34,7 @@ export default async function AdminPage() {
     const allAuthors = await db.author.findMany({
         orderBy: { name: "asc" },
         include: {
-            books: true, // Щоб порахувати кількість книг
+            books: true,
         },
     });
 
